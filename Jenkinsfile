@@ -14,6 +14,13 @@ String buildShell = "${env.buildShell}"
 // 流水线
 pipeline {
     agent any
+    
+    options {
+        timestamps()  //日志会有时间
+        skipDefaultCheckout()  //删除隐式checkout scm语句
+        disableConcurrentBuilds() //禁止并行
+        timeout(time: 1, unit: 'HOURS')  //流水线超时设置1h
+    }
 
     stages {
         
@@ -21,6 +28,13 @@ pipeline {
             steps{
                 script{
                     tools.PrintMes("获取代码","green")
+                    
+                    if ("${runOpts}" == "GitlabPush"){
+                        branchName = branch - "refs/heads/"
+                    }
+
+                    tools.PrintMes("${branchName}","red")
+                    
                     checkout([$class: 'GitSCM', branches: [[name: '${branchName}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitlab', url: '${srcUrl}']]])
                 }
             }
